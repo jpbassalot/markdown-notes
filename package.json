@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "init-content": "node scripts/init-content.mjs",
+    "predev": "node scripts/init-content.mjs",
+    "prebuild": "node scripts/init-content.mjs",
     "dev": "next dev",
     "build": "NODE_ENV=production next build",
     "start": "next start",

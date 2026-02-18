@@ -16,13 +16,22 @@ npm install
 npm run dev
 ```
 
+On the first run, `predev` automatically creates `content/notes/` and
+`content/templates/` and seeds each with a starter file if they are empty.
+You can also trigger this manually at any time:
+
+```bash
+npm run init-content
+```
+
 ## Build static output
 
 ```bash
 npm run build
 ```
 
-Static files are generated to `out/`.
+Static files are generated to `out/`. The `prebuild` hook runs the same
+content-init step automatically.
 
 ## Content structure
 
@@ -54,6 +63,7 @@ Tests use Vitest and cover:
 
 - **`tests/notes.test.ts`** — `lib/notes.ts` data layer (slug listing, doc fetching, tag queries, date parsing, path traversal rejection)
 - **`tests/searchable-docs.test.tsx`** — SearchableDocs component (rendering, fuzzy search filtering, clear button, tag links, type badges)
+- **`tests/init-content.test.ts`** — `scripts/init-content.mjs` (directory creation, seed-file generation, no-overwrite safety, idempotency)
 - **`tests/link-integrity.test.ts`** — verifies every slug/tag has a corresponding HTML file in `out/` and all internal links in `index.html` resolve (requires `npm run build` first)
 
 ## Routes
