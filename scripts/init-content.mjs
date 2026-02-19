@@ -15,8 +15,28 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(__dirname, "..");
 
 const TODAY = new Date().toISOString().slice(0, 10);
+const INBOX_README_FALLBACK = `# Inbox\n\nDrop text files here to convert them into notes automatically.\nSee the project README for setup instructions.\n`;
+
+/**
+ * Resolve inbox README seed text for a given root.
+ * @param {string} root
+ */
+export function getInboxReadmeSeedContent(root = DEFAULT_ROOT) {
+  const inboxReadmeSource = path.join(root, "content", "inbox", "README.md");
+  try {
+    return fs.readFileSync(inboxReadmeSource, "utf8");
+  } catch {
+    return INBOX_README_FALLBACK;
+  }
+}
 
 export const SEEDS = [
+  {
+    dir: "content/inbox",
+    filename: "README.md",
+    // Resolve against the provided root so tests remain isolated.
+    content: getInboxReadmeSeedContent,
+  },
   {
     dir: "content/notes",
     filename: "getting-started.md",
@@ -108,7 +128,9 @@ export function initContent(root = DEFAULT_ROOT) {
 
     const seedPath = path.join(absDir, seed.filename);
     if (!fs.existsSync(seedPath) && (wasNew || !hasMarkdownFiles(absDir))) {
-      fs.writeFileSync(seedPath, seed.content, "utf8");
+      const seedContent =
+        typeof seed.content === "function" ? seed.content(root) : seed.content;
+      fs.writeFileSync(seedPath, seedContent, "utf8");
       console.log(`[init-content] seeded ${seed.dir}/${seed.filename}`);
     }
   }

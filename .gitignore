@@ -18,6 +18,10 @@
 /content/notes/
 /content/templates/
 
+# inbox archive folders (auto-created by watch-inbox)
+/content/inbox/.processed/
+/content/inbox/.failed/
+
 # next.js
 /.next/
 /out/
@@ -44,3 +48,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# TODO
+todo.md

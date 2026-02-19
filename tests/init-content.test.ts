@@ -5,7 +5,11 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 // @ts-expect-error — .mjs module, no type declarations
-import { initContent, SEEDS } from "../scripts/init-content.mjs";
+import {
+  getInboxReadmeSeedContent,
+  initContent,
+  SEEDS,
+} from "../scripts/init-content.mjs";
 
 let tmpRoot: string;
 
@@ -106,5 +110,17 @@ describe("initContent — idempotent (existing content)", () => {
       const files = fs.readdirSync(dir).filter((f: string) => f.endsWith(".md"));
       expect(files.length).toBe(1);
     }
+  });
+});
+
+describe("getInboxReadmeSeedContent", () => {
+  it("resolves against the provided root directory", () => {
+    const inboxDir = path.join(tmpRoot, "content", "inbox");
+    fs.mkdirSync(inboxDir, { recursive: true });
+
+    const expected = "# Custom Inbox Readme\n\nFrom temp root.";
+    fs.writeFileSync(path.join(inboxDir, "README.md"), expected, "utf8");
+
+    expect(getInboxReadmeSeedContent(tmpRoot)).toBe(expected);
   });
 });
