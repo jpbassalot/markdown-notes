@@ -90,3 +90,9 @@ template that contains a `[[slug]]` reference to it — mirroring Obsidian's bac
 - `/templates/[slug]`: template page
 - `/tags`: tag index
 - `/tags/[tag]`: docs under a tag
+
+## Security
+
+Run `npm run audit:prod` to check production dependencies for vulnerabilities.
+See [SECURITY.md](SECURITY.md) for the full security policy, audit process, and
+accepted dev-only risks.
