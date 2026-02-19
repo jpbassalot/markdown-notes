@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  extractWikiLinks,
+  getBacklinks,
   getAllDocs,
   getAllNotes,
   getAllTags,
@@ -153,5 +155,87 @@ describe("getDocsByTag", () => {
   it("returns empty array for a nonexistent tag", () => {
     const docs = getDocsByTag("zzz-nonexistent-tag");
     expect(docs).toEqual([]);
+  });
+});
+
+describe("extractWikiLinks", () => {
+  it("extracts slug from a basic [[wikilink]]", () => {
+    expect(extractWikiLinks("See [[getting-started]] for more.")).toEqual(["getting-started"]);
+  });
+
+  it("extracts slug from [[slug|label]] syntax", () => {
+    expect(extractWikiLinks("Read [[getting-started|this guide]] first.")).toEqual([
+      "getting-started",
+    ]);
+  });
+
+  it("extracts multiple unique slugs", () => {
+    const links = extractWikiLinks("See [[alpha]] and [[beta]] and [[alpha]] again.");
+    expect(links).toEqual(["alpha", "beta"]);
+  });
+
+  it("returns empty array when no wiki links present", () => {
+    expect(extractWikiLinks("No links here.")).toEqual([]);
+  });
+
+  it("trims whitespace from slugs", () => {
+    expect(extractWikiLinks("[[ padded-slug ]]")).toEqual(["padded-slug"]);
+  });
+});
+
+describe("getBacklinks", () => {
+  // identity.md contains [[getting-started]], so getting-started should have identity as a backlink
+  it("returns docs that wikilink to the given slug", () => {
+    const backlinks = getBacklinks("getting-started");
+    const slugs = backlinks.map((d) => d.slug);
+    expect(slugs).toContain("identity");
+  });
+
+  it("returned backlinks are DocSummary objects", () => {
+    const backlinks = getBacklinks("getting-started");
+    backlinks.forEach((doc) => {
+      expect(doc).toHaveProperty("slug");
+      expect(doc).toHaveProperty("title");
+      expect(doc).toHaveProperty("tags");
+      expect(doc).toHaveProperty("excerpt");
+      expect(doc).toHaveProperty("type");
+    });
+  });
+
+  it("does not include the note itself as a backlink", () => {
+    const backlinks = getBacklinks("getting-started");
+    expect(backlinks.map((d) => d.slug)).not.toContain("getting-started");
+  });
+
+  it("returns empty array when no docs link to the slug", () => {
+    const backlinks = getBacklinks("zzz-no-such-slug");
+    expect(backlinks).toEqual([]);
+  });
+
+  it("results are sorted by title", () => {
+    const backlinks = getBacklinks("getting-started");
+    for (let i = 1; i < backlinks.length; i++) {
+      expect(backlinks[i - 1].title.localeCompare(backlinks[i].title)).toBeLessThanOrEqual(0);
+    }
+  });
+});
+
+describe("getNoteBySlug backlinks", () => {
+  it("includes a backlinks array in DocDetail", async () => {
+    const note = await getNoteBySlug("getting-started");
+    expect(note).not.toBeNull();
+    expect(Array.isArray(note!.backlinks)).toBe(true);
+  });
+
+  it("backlinks includes identity note which links to getting-started", async () => {
+    const note = await getNoteBySlug("getting-started");
+    expect(note!.backlinks.map((d) => d.slug)).toContain("identity");
+  });
+
+  it("a note with no inbound links has an empty backlinks array", async () => {
+    // identity.md is not linked by any other note
+    const note = await getNoteBySlug("identity");
+    expect(note).not.toBeNull();
+    expect(note!.backlinks).toEqual([]);
   });
 });

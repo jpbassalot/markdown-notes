@@ -55,6 +55,29 @@ export default async function TemplatePage({ params }: Props) {
 
         <div dangerouslySetInnerHTML={{ __html: template.contentHtml }} className="mt-8" />
       </article>
+
+      {template.backlinks.length > 0 && (
+        <section className="mt-10 border-t border-slate-200 pt-6">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Backlinks
+          </h2>
+          <ul className="mt-3 space-y-3">
+            {template.backlinks.map((backlink) => (
+              <li key={backlink.slug}>
+                <Link
+                  href={`/${backlink.type === "note" ? "notes" : "templates"}/${backlink.slug}`}
+                  className="text-sm font-medium text-slate-800 hover:underline"
+                >
+                  {backlink.title}
+                </Link>
+                {backlink.excerpt && (
+                  <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{backlink.excerpt}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </main>
   );
 }

@@ -66,6 +66,22 @@ Tests use Vitest and cover:
 - **`tests/init-content.test.ts`** — `scripts/init-content.mjs` (directory creation, seed-file generation, no-overwrite safety, idempotency)
 - **`tests/link-integrity.test.ts`** — verifies every slug/tag has a corresponding HTML file in `out/` and all internal links in `index.html` resolve (requires `npm run build` first)
 
+## Wiki links and backlinks
+
+Notes and templates can link to each other using Obsidian-style wiki link syntax:
+
+```md
+[[other-note]]            links to content/notes/other-note.md
+[[other-note|label]]      same link with custom display text
+[[my-template]]           links to content/templates/my-template.md (if no note matches first)
+```
+
+Wiki links are rendered as clickable HTML links. The app resolves the slug against
+`content/notes/` first, then `content/templates/`.
+
+Each note and template page shows a **Backlinks** section listing every other note or
+template that contains a `[[slug]]` reference to it — mirroring Obsidian's backlinks panel.
+
 ## Routes
 
 - `/`: searchable index (notes + templates)

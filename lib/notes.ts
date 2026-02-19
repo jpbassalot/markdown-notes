@@ -28,6 +28,7 @@ export type DocSummary = {
 
 export type DocDetail = DocSummary & {
   contentHtml: string;
+  backlinks: DocSummary[];
 };
 
 function listMarkdownFiles(dir: string): string[] {
@@ -93,6 +94,8 @@ function createExcerpt(markdown: string): string {
   const plain = markdown
     .replace(/!\[[^\]]*\]\([^)]*\)/g, "") // strip images entirely
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // links: keep display text, drop URL
+    .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, "$2") // wiki links with label: keep label
+    .replace(/\[\[([^\]]+)\]\]/g, "$1") // wiki links: keep slug as text
     .replace(/```[\s\S]*?```/gm, "") // fenced code blocks
     .replace(/`[^`]+`/g, "") // inline code
     .replace(/^#{1,6}\s*/gm, "") // heading markers
@@ -136,10 +139,71 @@ function getDocFromDirectory(
   return parseDocFromFile(fullPath, type);
 }
 
+/** Extracts slugs referenced by [[wikilink]] or [[slug|label]] syntax. */
+export function extractWikiLinks(markdown: string): string[] {
+  const regex = /\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g;
+  const slugs: string[] = [];
+  let match;
+  while ((match = regex.exec(markdown)) !== null) {
+    slugs.push(match[1].trim());
+  }
+  return [...new Set(slugs)];
+}
+
+function resolveWikiLinkUrl(slug: string): string {
+  if (fs.existsSync(path.join(NOTES_DIR, `${slug}.md`))) return `/notes/${slug}`;
+  if (fs.existsSync(path.join(TEMPLATES_DIR, `${slug}.md`))) return `/templates/${slug}`;
+  return `/notes/${slug}`;
+}
+
+function preprocessWikiLinks(markdown: string): string {
+  return markdown.replace(
+    /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
+    (_, slug: string, label: string | undefined) => {
+      const url = resolveWikiLinkUrl(slug.trim());
+      const text = label?.trim() ?? slug.trim();
+      return `[${text}](${url})`;
+    },
+  );
+}
+
 async function markdownToHtml(markdown: string): Promise<string> {
+  const preprocessed = preprocessWikiLinks(markdown);
   // Keep sanitization explicit to avoid accidental unsafe config changes.
-  const rendered = await remark().use(html, { sanitize: true }).process(markdown);
+  const rendered = await remark().use(html, { sanitize: true }).process(preprocessed);
   return rendered.toString();
+}
+
+/**
+ * Returns all docs (notes + templates) that contain a [[slug]] wikilink
+ * pointing at the given slug.
+ */
+export function getBacklinks(slug: string): DocSummary[] {
+  const dirs: Array<{ dir: string; type: DocType }> = [
+    { dir: NOTES_DIR, type: "note" },
+    { dir: TEMPLATES_DIR, type: "template" },
+  ];
+
+  const results: DocSummary[] = [];
+
+  for (const { dir, type } of dirs) {
+    for (const fileName of listMarkdownFiles(dir)) {
+      const fullPath = path.join(dir, fileName);
+      const parsed = parseDocFromFile(fullPath, type);
+      if (parsed.slug !== slug && extractWikiLinks(parsed.rawContent).includes(slug)) {
+        results.push({
+          slug: parsed.slug,
+          title: parsed.title,
+          tags: parsed.tags,
+          updatedAt: parsed.updatedAt,
+          excerpt: createExcerpt(parsed.rawContent),
+          type,
+        });
+      }
+    }
+  }
+
+  return results.sort((a, b) => a.title.localeCompare(b.title));
 }
 
 export function getNoteSlugs(): string[] {
@@ -176,6 +240,7 @@ export async function getNoteBySlug(slug: string): Promise<DocDetail | null> {
     excerpt: createExcerpt(parsed.rawContent),
     type: parsed.type,
     contentHtml: await markdownToHtml(parsed.rawContent),
+    backlinks: getBacklinks(parsed.slug),
   };
 }
 
@@ -191,6 +256,7 @@ export async function getTemplateBySlug(slug: string): Promise<DocDetail | null>
     excerpt: createExcerpt(parsed.rawContent),
     type: parsed.type,
     contentHtml: await markdownToHtml(parsed.rawContent),
+    backlinks: getBacklinks(parsed.slug),
   };
 }
 
