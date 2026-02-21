@@ -25,14 +25,17 @@ You can also trigger this manually at any time:
 npm run init-content
 ```
 
-## Build static output
+## Build
 
 ```bash
-npm run build
+npm run build          # standard Next.js build (supports server actions like /notes/new)
+npm run build:static   # static export to out/ (no server features)
+npm run preview        # build:static + serve out/ locally
 ```
 
-Static files are generated to `out/`. The `prebuild` hook runs the same
-content-init step automatically.
+The `prebuild` hook runs the same content-init step automatically.
+Use `npm start` after `npm run build` for the full-featured server, or
+`npm run preview` for a static-only preview.
 
 ## Content structure
 
@@ -126,6 +129,7 @@ template that contains a `[[slug]]` reference to it — mirroring Obsidian's bac
 ## Routes
 
 - `/`: searchable index (notes + templates)
+- `/notes/new`: create a new note via browser (markdown editor with tag pills, sends to inbox for LLM processing)
 - `/notes/[slug]`: note pages
 - `/templates`: template list
 - `/templates/[slug]`: template page

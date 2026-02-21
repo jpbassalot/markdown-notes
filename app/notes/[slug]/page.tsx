@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getNoteBySlug, getNoteSlugs } from "@/lib/notes";
+import DeleteNoteButton from "./DeleteNoteButton";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -35,9 +36,12 @@ export default async function NotePage({ params }: Props) {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
-      <Link href="/" className="text-sm text-slate-600 hover:underline">
-        ← Back to notes
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link href="/" className="text-sm text-slate-600 hover:underline">
+          ← Back to notes
+        </Link>
+        <DeleteNoteButton slug={slug} />
+      </div>
 
       <article className="prose prose-slate mt-6 max-w-none">
         <h1>{note.title}</h1>
