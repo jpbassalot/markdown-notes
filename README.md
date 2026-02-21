@@ -1,4 +1,4 @@
-# Markdown Notes Static Site
+# Markdown Notes
 
 Next.js App Router static-export project for Obsidian-style note-taking with markdown files, tags, templates, and Fuse.js search.
 
