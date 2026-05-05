@@ -28,7 +28,7 @@ npm run init-content
 ## Build
 
 ```bash
-npm run build          # standard Next.js build (supports server actions like /notes/new)
+npm run build          # standard Next.js build (supports server actions like /notes/new and note deletion)
 npm run build:static   # static export to out/ (no server features)
 npm run preview        # build:static + serve out/ locally
 ```
@@ -86,7 +86,7 @@ Create `.env` from `.env.example` and set:
 - `LLM_API_KEY` (not required for local `ollama`)
 - Optional `LLM_MODEL`, `LLM_BASE_URL`, `INBOX_DIR`
 
-Node.js `>=20.6.0` is required (used by `node --env-file` scripts).
+Node.js `>=20.19.0` is required.
 
 ## Prompt and format customization
 
@@ -130,7 +130,7 @@ template that contains a `[[slug]]` reference to it — mirroring Obsidian's bac
 
 - `/`: searchable index (notes + templates)
 - `/notes/new`: create a new note via browser (markdown editor with tag pills, sends to inbox for LLM processing)
-- `/notes/[slug]`: note pages
+- `/notes/[slug]`: note pages with browser delete support under the full Next.js build
 - `/templates`: template list
 - `/templates/[slug]`: template page
 - `/tags`: tag index
