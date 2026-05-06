@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { deleteNote } from "./actions";
+import { deleteNote } from "@/app/notes/[slug]/actions";
 
 type State = "idle" | "confirming" | "deleting" | "deleted" | "error";
 

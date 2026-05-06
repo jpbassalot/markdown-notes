@@ -15,7 +15,7 @@ vi.mock("@/app/notes/new/actions", () => ({
 }));
 
 // Dynamic import after mock registration so the component picks up the mock
-const { default: NewNotePage } = await import("@/app/notes/new/page");
+const { default: NewNotePage } = await import("@/app/notes/new/InteractiveNewNotePage");
 const { saveNote } = await import("@/app/notes/new/actions");
 
 // ── pure helper tests ──────────────────────────────────────────────────────────

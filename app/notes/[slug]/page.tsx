@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getNoteBySlug, getNoteSlugs } from "@/lib/notes";
-import DeleteNoteButton from "./DeleteNoteButton";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -34,13 +33,21 @@ export default async function NotePage({ params }: Props) {
     notFound();
   }
 
+  const deleteControl = process.env.NEXT_EXPORT === "true"
+    ? (
+      <span className="text-xs font-medium text-slate-500">
+        Delete unavailable in static export
+      </span>
+    )
+    : await renderDeleteButton(slug);
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-10">
       <div className="flex items-center justify-between">
         <Link href="/" className="text-sm text-slate-600 hover:underline">
           ← Back to notes
         </Link>
-        <DeleteNoteButton slug={slug} />
+        {deleteControl}
       </div>
 
       <article className="prose prose-slate mt-6 max-w-none">
@@ -89,3 +96,8 @@ export default async function NotePage({ params }: Props) {
 }
 
 export const dynamicParams = false;
+
+async function renderDeleteButton(slug: string) {
+  const { default: DeleteNoteButton } = await import("./DeleteNoteButton");
+  return <DeleteNoteButton slug={slug} />;
+}
